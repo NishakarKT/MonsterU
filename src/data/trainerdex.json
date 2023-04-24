@@ -1,0 +1,26 @@
+[
+  {
+    "id": "0",
+    "name": "Random Trainer",
+    "position": "Trainer",
+    "photo": "/images/trainers/0.jpg",
+    "description": "Bring it on! My Pokémon and I are always up for a challenge. Let's battle to the very end with random pokemon teams!",
+    "team": []
+  },
+  {
+    "id": "1",
+    "name": "Nishakar Kumar",
+    "position": "Champion",
+    "photo": "/images/trainers/1.jpg",
+    "description": "I wield the power of the most feared Pokemon. With its shadowy tendrils and piercing red eyes, it strikes fear into the bravest.",
+    "team": ["372", "388", "375", "259", "5", "490"]
+  },
+  {
+    "id": "2",
+    "name": "Vibhu Yadav",
+    "position": "Asli Mard",
+    "photo": "/images/trainers/2.jpg",
+    "description": "My Giratina, a being that commands respect and fear. Those who dare to stand against my team do so at their own peril.",
+    "team": ["383", "381", "382", "482", "483", "486"]
+  }
+]

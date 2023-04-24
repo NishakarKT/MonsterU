@@ -2,13 +2,14 @@ import React, { useState, useRef } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 // components
 import Battle from "./pages/Battle";
+import Home from "./pages/Home";
 import { BATTLE_ROUTE } from "./constants/routes";
 // constants
 import { COMPANY } from "./constants/vars";
 // mui
 import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
 import { CssBaseline, Drawer as MuiDrawer, Box, AppBar as MuiAppBar, Toolbar, List, Typography, Divider, IconButton, Badge, Container, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
-import { Menu, ChevronLeft, CatchingPokemon } from "@mui/icons-material";
+import { ChevronLeft, CatchingPokemon } from "@mui/icons-material";
 
 const drawerWidth = 240;
 
@@ -60,6 +61,7 @@ const App = () => {
   const navigate = useNavigate();
   const boxRef = useRef(null);
   const [open, setOpen] = useState(false);
+  const [foeTrainer, setFoeTrainer] = useState(null);
   const toggleDrawer = () => {
     setOpen(!open);
   };
@@ -98,8 +100,8 @@ const App = () => {
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Routes>
-              <Route path="/battle/*" element={<Battle boxRef={boxRef} />} />
-              <Route path="/*" element={<Battle boxRef={boxRef} />} />
+              <Route path="/battle/*" element={<Battle boxRef={boxRef} foeTrainer={foeTrainer} />} />
+              <Route path="/*" element={<Home setFoeTrainer={setFoeTrainer} />} />
             </Routes>
             <Typography sx={{ pt: 4 }} variant="body2" color="text.secondary" align="center">
               Copyright © {COMPANY} {new Date().getFullYear()}
