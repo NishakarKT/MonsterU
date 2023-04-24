@@ -91,10 +91,12 @@ const Duel = ({ boxRef }) => {
       setTimeout(() => setIsBattleOn(false), 3000);
       if (Number(myPkmn.stats.Speed) >= Number(foePkmn.stats.Speed)) {
         attackFoePkmn(myPkmnMove, foePkmnMove);
+        if (boxRef.current) setTimeout(() => boxRef.current.scrollTo(0, 0), 100);
         setFoePkmnMove(null);
         setMyPkmnMove(null);
       } else {
         attackMyPkmn(foePkmnMove, myPkmnMove);
+        if (boxRef.current) setTimeout(() => boxRef.current.scrollTo(0, 0), 100);
         setMyPkmnMove(null);
         setFoePkmnMove(null);
       }
@@ -244,8 +246,8 @@ const Duel = ({ boxRef }) => {
       </Dialog>
       <Grid container spacing={2}>
         <Grid item xs={12} md={8}>
-          <Paper sx={{ position: "relative", p: 2, height: "100%", background: `url(fields/1.jpg) no-repeat center center / cover` }}>
-            {myPkmn.data && myPkmn.stats ? <CardMedia ref={myPkmnRef} sx={{ width: `${Math.min(Math.max(Number(myPkmn.data.profile.height.split(" ")[0]) * 150, 100), 100)}px`, position: "absolute", bottom: "30%", left: "30%", objectFit: "contain", zIndex: 2, opacity: Number(myPkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(myPkmn.data.id, "b")} alt="" /> : null}
+          <Paper sx={{ position: "relative", p: 2, height: "100%", minHeight: "400px", background: `url(fields/1.jpg) no-repeat center center / cover` }}>
+            {myPkmn.data && myPkmn.stats ? <CardMedia ref={myPkmnRef} sx={{ width: `${Math.min(Math.max(Number(myPkmn.data.profile.height.split(" ")[0]) * 150, 100), 100)}px`, position: "absolute", bottom: "30%", left: "20%", objectFit: "contain", zIndex: 2, opacity: Number(myPkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(myPkmn.data.id, "b")} alt="" /> : null}
             {foePkmn?.data ? <CardMedia ref={foePkmnRef} sx={{ width: `${Math.min(Math.max(Number(foePkmn.data.profile.height.split(" ")[0]) * 75, 50), 100)}px`, position: "absolute", bottom: "40%", right: "20%", objectFit: "contain", zIndex: 1, opacity: Number(foePkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(foePkmn.data.id, "")} alt="" /> : null}
             {myPkmn?.data ? (
               <Stack direction="row" alignItems="flex-end" justifyContent="space-between" spacing={1} sx={{ width: "100%", position: "absolute", bottom: "0", left: "0", zIndex: 3 }}>
@@ -275,7 +277,7 @@ const Duel = ({ boxRef }) => {
                     />
                   </Stack>
                 </Stack>
-                <Grid container xs={12}>
+                <Grid container xs={12} display={{ xs: "none", sm: "flex" }}>
                   {myPkmn.moves.map((move) => (
                     <Grid item xs={12} sm={6} p={1}>
                       <Button fullWidth disabled={isBattleOn || gameOver || Number(myPkmn.stats.HP) === 0} variant={myPkmnMove?.id === move.id ? "contained" : "outlined"} onClick={() => setMyPkmnMove(move)} key={move.id}>
@@ -287,18 +289,19 @@ const Duel = ({ boxRef }) => {
               </Stack>
             ) : null}
             {foePkmn.data && foePkmn.stats ? (
-              <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={1} sx={{ width: "100%", position: "absolute", top: "0", left: "0", zIndex: 3 }}>
+              <Stack direction="row" alignItems="flex-start" justifyContent={{ xs: "flex-end", sm: "space-between" }} spacing={1} sx={{ width: "100%", position: "absolute", top: "0", left: "0", zIndex: 3 }}>
                 {/* <Grid container xs={12}>
                   {foePkmn.moves.map((move) => (
                     <Grid item xs={12} sm={6} p={1}>
+                      <Button fullWidth disabled={isBattleOn || gameOver || Number(foePkmn.stats.HP) === 0} variant={foePkmnMove?.id === move.id ? "contained" : "outlined"} onClick={() => setFoePkmnMove(move)} key={move.id}>
                       <Button fullWidth disabled={isBattleOn || gameOver || Number(foePkmn.stats.HP) === 0} variant={foePkmnMove?.id === move.id ? "contained" : "outlined"} onClick={() => setFoePkmnMove(move)} key={move.id}>
                         {move.ename}
                       </Button>
                     </Grid>
                   ))}
                 </Grid> */}
-                <Grid container xs={12}>
-                  <Stack direction="row" p={2}>
+                <Grid container xs={12} display={{ xs: "none", sm: "flex" }}>
+                  <Stack direction="row" flexWrap="wrap" p={2}>
                     {foePkmns.map((foePkmn) => (
                       <CardMedia component="img" sx={{ width: "50px", objectFit: "contain", filter: Number(foePkmn.stats.HP) === 0 ? "brightness(0)" : "brightness(1)" }} src={foePkmn.data.image.hires} />
                     ))}
@@ -333,6 +336,26 @@ const Duel = ({ boxRef }) => {
               </Stack>
             ) : null}
           </Paper>
+        </Grid>
+        <Grid item sx={12} display={{ xs: "flex", sm: "none" }}>
+          {myPkmn.data && myPkmn.stats ? (
+            <Grid container xs={12}>
+              {myPkmn.moves.map((move) => (
+                <Grid item xs={12} sm={6} p={1}>
+                  <Button fullWidth disabled={isBattleOn || gameOver || Number(myPkmn.stats.HP) === 0} variant={myPkmnMove?.id === move.id ? "contained" : "outlined"} onClick={() => setMyPkmnMove(move)} key={move.id}>
+                    {move.ename}
+                  </Button>
+                </Grid>
+              ))}
+            </Grid>
+          ) : null}
+        </Grid>
+        <Grid item sx={12} display={{ xs: "flex", sm: "none" }}>
+          <Stack direction="row" flexWrap="wrap" p={2}>
+            {foePkmns.map((foePkmn) => (
+              <CardMedia component="img" sx={{ width: "50px", objectFit: "contain", filter: Number(foePkmn.stats.HP) === 0 ? "brightness(0)" : "brightness(1)" }} src={foePkmn.data.image.hires} />
+            ))}
+          </Stack>
         </Grid>
         <Grid item xs={12} md={4}>
           <Stack spacing={2}>
@@ -372,38 +395,40 @@ const Duel = ({ boxRef }) => {
                   My Team
                 </Typography>
                 <Grid container>
-                  {myPkmns.map((pkmn) => (
-                    pkmn.data && pkmn.stats ? <Grid item xs={12} sm={6} md={2}>
-                      <Card sx={{ height: "100%" }}>
-                        <CardActionArea onClick={() => handleMyPkmn(pkmn)}>
-                          <CardMedia component="img" sx={{ height: "75px", objectFit: "contain", mt: 2 }} src={getSprite(pkmn.data.id)} />
-                          <CardContent>
-                            <Typography gutterBottom variant="body2">
-                              {pkmn.data.id + " | " + pkmn.data.name.english}
-                            </Typography>
-                            <Stack direction="row" spacing={1}>
-                              {pkmn.data.type.map((type) => (
-                                <Chip key={pkmn.data.id + type} sx={{ color: "white", bgcolor: types.find((t) => t.english === type).color }} label={type} />
-                              ))}
-                            </Stack>
-                            <Slider
-                              value={Number(pkmn.stats.HP)}
-                              onChange={() => {}}
-                              color={Number(pkmn.stats.HP) > 0.25 * Number(pkmn.data.base.HP) ? "success" : "error"}
-                              max={Number(pkmn.data.base.HP)}
-                              marks={[
-                                { value: 0, label: 0 },
-                                { value: Math.floor(0.25 * Number(pkmn.data.base.HP)), label: Math.floor(0.25 * Number(pkmn.data.base.HP)) },
-                                // { value: Math.floor(0.5 * Number(pkmn.data.base.HP)), label: Math.floor(0.5 * Number(pkmn.data.base.HP)) },
-                                { value: Math.floor(1 * Number(pkmn.data.base.HP)), label: Math.floor(1 * Number(pkmn.data.base.HP)) },
-                              ]}
-                              valueLabelDisplay="auto"
-                            />
-                          </CardContent>
-                        </CardActionArea>
-                      </Card>
-                    </Grid> : null
-                  ))}
+                  {myPkmns.map((pkmn) =>
+                    pkmn.data && pkmn.stats ? (
+                      <Grid item xs={12} sm={6} md={2}>
+                        <Card sx={{ height: "100%" }}>
+                          <CardActionArea onClick={() => handleMyPkmn(pkmn)}>
+                            <CardMedia component="img" sx={{ height: "75px", objectFit: "contain", mt: 2 }} src={getSprite(pkmn.data.id)} />
+                            <CardContent>
+                              <Typography gutterBottom variant="body2">
+                                {pkmn.data.id + " | " + pkmn.data.name.english}
+                              </Typography>
+                              <Stack direction="row" spacing={1}>
+                                {pkmn.data.type.map((type) => (
+                                  <Chip key={pkmn.data.id + type} sx={{ color: "white", bgcolor: types.find((t) => t.english === type).color }} label={type} />
+                                ))}
+                              </Stack>
+                              <Slider
+                                value={Number(pkmn.stats.HP)}
+                                onChange={() => {}}
+                                color={Number(pkmn.stats.HP) > 0.25 * Number(pkmn.data.base.HP) ? "success" : "error"}
+                                max={Number(pkmn.data.base.HP)}
+                                marks={[
+                                  { value: 0, label: 0 },
+                                  { value: Math.floor(0.25 * Number(pkmn.data.base.HP)), label: Math.floor(0.25 * Number(pkmn.data.base.HP)) },
+                                  // { value: Math.floor(0.5 * Number(pkmn.data.base.HP)), label: Math.floor(0.5 * Number(pkmn.data.base.HP)) },
+                                  { value: Math.floor(1 * Number(pkmn.data.base.HP)), label: Math.floor(1 * Number(pkmn.data.base.HP)) },
+                                ]}
+                                valueLabelDisplay="auto"
+                              />
+                            </CardContent>
+                          </CardActionArea>
+                        </Card>
+                      </Grid>
+                    ) : null
+                  )}
                 </Grid>
               </Stack>
             ) : null}

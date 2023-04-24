@@ -70,15 +70,15 @@ const App = () => {
         <CssBaseline />
         <AppBar position="absolute" open={open}>
           <Toolbar sx={{ pr: "24px" }}>
-            <IconButton edge="start" color="inherit" aria-label="open drawer" onClick={toggleDrawer} sx={{ marginRight: "36px", ...(open && { display: "none" }) }}>
-              <Menu />
+            <IconButton color="inherit">
+              <CatchingPokemon />
             </IconButton>
             <Typography component="h1" variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
               {COMPANY}
             </Typography>
           </Toolbar>
         </AppBar>
-        <Drawer variant="permanent" open={open}>
+        <Drawer variant="permanent" sx={{ display: "none" }} open={open}>
           <Toolbar sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", px: [1] }}>
             <IconButton onClick={toggleDrawer}>
               <ChevronLeft />
@@ -99,6 +99,7 @@ const App = () => {
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Routes>
               <Route path="/battle/*" element={<Battle boxRef={boxRef} />} />
+              <Route path="/*" element={<Battle boxRef={boxRef} />} />
             </Routes>
             <Typography sx={{ pt: 4 }} variant="body2" color="text.secondary" align="center">
               Copyright © {COMPANY} {new Date().getFullYear()}
