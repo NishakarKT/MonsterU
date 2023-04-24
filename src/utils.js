@@ -1,5 +1,5 @@
 export const getSprite = (id, sfx = "") => {
-  return "/sprites/" + (Math.floor(Number(id) / 100) % 10) + (Math.floor(Number(id) / 10) % 10) + Math.floor(Number(id) % 10) + sfx + ".gif";
+  return "https://raw.githubusercontent.com/NishakarKT/3D-Pokedex/main/public/images/sprites/" + (Math.floor(Number(id) / 100) % 10) + (Math.floor(Number(id) / 10) % 10) + Math.floor(Number(id) % 10) + sfx + ".gif";
 };
 
 export const capitalize = string => {
