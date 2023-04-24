@@ -163,7 +163,7 @@ const Duel = ({ boxRef, foeTrainer }) => {
         if (pkmn.data.id !== myPkmn.data.id && Number(pkmn.stats.HP) !== 0) handleMyPkmn(pkmn);
         else if (Number(pkmn.stats.HP) === 0) cnt++;
       });
-      if (cnt === myPkmn.length - 1) setTimeout(() => setGameOver("You Lost! All your pokemon have fainted!"), 1500);
+      if (cnt === myPkmns.length - 1) setTimeout(() => setGameOver("You Lost! All your pokemon have fainted!"), 1500);
     } else if (myMove) setTimeout(() => attackFoePkmn(myMove), 1500);
 
     // // check if game over
