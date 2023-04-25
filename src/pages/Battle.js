@@ -303,7 +303,7 @@ const Battle = ({ trainer, foeTrainer }) => {
               </Stack>
             ) : null}
             {foePkmns.map((foePkmn, index) => (
-              <CardMedia sx={{ position: "absolute", bottom: "25%", right: `${15 * ((index + 1) / foePkmns.length)}%`, zIndex: 1, width: `${Math.min(Math.max(Number(foePkmn.data.profile.height.split(" ")[0]) * 150, 30), 30)}px`, objectFit: "contain", opacity: Number(foePkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(foePkmn.data.id)} alt="" />
+              <CardMedia sx={{ position: "absolute", bottom: "30%", right: `${15 * ((index + 1) / foePkmns.length)}%`, zIndex: 0, width: `${Math.min(Math.max(Number(foePkmn.data.profile.height.split(" ")[0]) * 150, 50), 50)}px`, objectFit: "contain", opacity: Number(foePkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(foePkmn.data.id)} alt="" />
             ))}
             {myPkmn && myPkmn.data && myPkmn.stats && !isBattleOn ? (
               <Stack direction="row" alignItems="flex-end" justifyContent="space-between" spacing={1} sx={{ width: "100%", position: "absolute", bottom: "0", left: "0", zIndex: 7 }}>

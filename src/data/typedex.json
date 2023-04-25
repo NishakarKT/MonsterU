@@ -68,7 +68,7 @@
     "japanese": "ゴースト",
     "effective": ["Psychic", "Ghost"],
     "ineffective": ["Dark"],
-    "no_effect": ["Normal", "Fighting"],
+    "no_effect": ["Normal"],
     "color": "#735797"
   },
   {
@@ -157,7 +157,7 @@
     "chinese": "妖精",
     "japanese": "フェアリー",
     "effective": ["Fighting", "Dragon", "Dark"],
-    "ineffective": ["Fire", "Poisin", "Steel"],
+    "ineffective": ["Fire", "Poison", "Steel"],
     "no_effect": [],
     "color": "#D685AD"
   }
