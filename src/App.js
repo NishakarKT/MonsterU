@@ -1,13 +1,13 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 // components
 import Battle from "./pages/Battle";
 import Home from "./pages/Home";
-import { BATTLE_ROUTE } from "./constants/routes";
+import { BATTLE_ROUTE, HOME_ROUTE } from "./constants/routes";
 // constants
 import { COMPANY } from "./constants/vars";
 // data
-import trainers from "./data/trainerdex.json";
+import trainerdex from "./data/trainerdex.json";
 // mui
 import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
 import { CssBaseline, Drawer as MuiDrawer, Box, AppBar as MuiAppBar, Toolbar, List, Typography, Divider, IconButton, Container, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
@@ -64,6 +64,13 @@ const App = () => {
   const [open, setOpen] = useState(false);
   const [trainer, setTrainer] = useState(null);
   const [foeTrainer, setFoeTrainer] = useState(null);
+  const [trainers, setTrainers] = useState([]);
+
+  useEffect(() => {
+    setTrainers(trainerdex);
+    setFoeTrainer(trainerdex[0]);
+  }, []);
+
   const toggleDrawer = () => {
     setOpen(!open);
   };
@@ -73,11 +80,11 @@ const App = () => {
       <Box sx={{ display: "flex" }}>
         <CssBaseline />
         <AppBar position="absolute" open={open}>
-          <Toolbar sx={{ pr: "24px" }}>
+          <Toolbar sx={{ pr: "24px" }} onClick={() => navigate(HOME_ROUTE)}>
             <IconButton color="inherit">
               <CatchingPokemon />
             </IconButton>
-            <Typography component="h1" variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
+            <Typography component="h1" variant="h6" color="inherit" noWrap sx={{ cursor: "pointer" }}>
               {COMPANY}
             </Typography>
           </Toolbar>
@@ -102,9 +109,8 @@ const App = () => {
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Routes>
-              <Route path="/*" element={<Battle foeTrainer={foeTrainer} />} />
               <Route path="/battle/*" element={<Battle trainer={trainer} foeTrainer={foeTrainer} />} />
-              <Route path="/*" element={<Home setFoeTrainer={setFoeTrainer} />} />
+              <Route path="/*" element={<Home foeTrainer={foeTrainer} setFoeTrainer={setFoeTrainer} />} />
             </Routes>
             <Typography sx={{ pt: 4 }} variant="body2" color="text.secondary" align="center">
               Copyright © {COMPANY} {new Date().getFullYear()}

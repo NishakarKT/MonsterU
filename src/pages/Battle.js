@@ -1,20 +1,25 @@
 import React, { Fragment, useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 // data
 import pokedex from "../data/pokedex.json";
 import movedex from "../data/movedex.json";
 import typeDex from "../data/typedex.json";
 // mui
 import { Paper, Grid, CardMedia, Stack, Slider, Menu, MenuItem, ListItemAvatar, ListItemText, Typography, Button, Dialog, DialogTitle, DialogActions, DialogContent, DialogContentText, Avatar, Tooltip } from "@mui/material";
+import { Home } from "@mui/icons-material";
 // utils
 import { getSprite, capitalize, shuffle } from "../utils";
 import { CatchingPokemon } from "@mui/icons-material";
+// constants
+import { HOME_ROUTE } from "../constants/routes";
 // vars
 const TURN_DELAY = 750;
 const TYPE_FACTOR = 1;
 const POWER_FACTOR = 0.5;
 const STATS_FACTOR = 0.5;
 
-const Duel = ({ trainer, foeTrainer }) => {
+const Battle = ({ trainer, foeTrainer }) => {
+  const navigate = useNavigate();
   const myPkmnRef = useRef(null);
   const foePkmnRef = useRef(null);
   const pkmns = pokedex.slice(0, 493);
@@ -35,7 +40,7 @@ const Duel = ({ trainer, foeTrainer }) => {
   const handleLog = (log) => {
     setLog("");
     for (let i = 0; i < log.length; i++) {
-      setTimeout(() => setLog((l) => l + log[i]), (i / log.length) * (0.5* TURN_DELAY));
+      setTimeout(() => setLog((l) => l + log[i]), (i / log.length) * (0.5 * TURN_DELAY));
     }
   };
 
@@ -63,7 +68,7 @@ const Duel = ({ trainer, foeTrainer }) => {
 
   const createFoeTeam = () => {
     const foePkmns = [];
-    if (!foeTrainer) {
+    if (!foeTrainer || !foeTrainer.team?.length) {
       while (foePkmns.length < 6) {
         const id = Math.floor(Math.random() * pkmns.length);
         if (!foePkmns.find((foePkmn) => foePkmn.id === id)) {
@@ -384,8 +389,11 @@ const Duel = ({ trainer, foeTrainer }) => {
           </Paper>
         </Grid>
       </Grid>
+      <Button onClick={() => navigate(HOME_ROUTE)} color="error" variant="contained" sx={{ mt: 2 }} startIcon={<Home />}>
+        Back to Home
+      </Button>
     </Fragment>
   );
 };
 
-export default Duel;
+export default Battle;
