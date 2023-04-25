@@ -4,41 +4,47 @@ import pokedex from "../data/pokedex.json";
 import movedex from "../data/movedex.json";
 import typeDex from "../data/typedex.json";
 // mui
-import { Paper, Grid, CardMedia, Stack, Slider, Typography, Button, Dialog, DialogTitle, DialogActions, DialogContent, DialogContentText, Chip, Card, CardActionArea, CardContent } from "@mui/material";
+import { Paper, Grid, CardMedia, Stack, Slider, Menu, MenuItem, ListItemAvatar, ListItemText, Typography, Button, Dialog, DialogTitle, DialogActions, DialogContent, DialogContentText, Avatar, Tooltip } from "@mui/material";
 // utils
 import { getSprite, capitalize, shuffle } from "../utils";
+import { CatchingPokemon } from "@mui/icons-material";
 // vars
+const TURN_DELAY = 750;
 const TYPE_FACTOR = 1;
 const POWER_FACTOR = 0.5;
 const STATS_FACTOR = 0.5;
 
-const Duel = ({ boxRef, foeTrainer }) => {
+const Duel = ({ trainer, foeTrainer }) => {
   const myPkmnRef = useRef(null);
   const foePkmnRef = useRef(null);
-  const logsRef = useRef(null);
-  const recentLogsRef = useRef(null);
   const pkmns = pokedex.slice(0, 493);
   const moves = movedex;
   const types = typeDex;
-  const [isBattleOn, setIsBattleOn] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [anchorEl2, setAnchorEl2] = useState(null);
   const [myPkmns, setMyPkmns] = useState([]);
   const [foePkmns, setFoePkmns] = useState([]);
   const [myPkmn, setMyPkmn] = useState({});
   const [myPkmnMove, setMyPkmnMove] = useState(null);
   const [foePkmn, setFoePkmn] = useState({});
   const [foePkmnMove, setFoePkmnMove] = useState(null);
-  const [recentLogs, setRecentLogs] = useState([]);
-  const [logs, setLogs] = useState([]);
+  const [isBattleOn, setIsBattleOn] = useState(false);
+  const [log, setLog] = useState("");
   const [gameOver, setGameOver] = useState("");
+
+  const handleLog = (log) => {
+    setLog("");
+    for (let i = 0; i < log.length; i++) {
+      setTimeout(() => setLog((l) => l + log[i]), (i / log.length) * (0.5* TURN_DELAY));
+    }
+  };
 
   const handleMyPkmn = (pkmn) => {
     setTimeout(() => setMyPkmn(pkmn), 100);
-    if (boxRef.current) setTimeout(() => boxRef.current.scrollTo(0, 0), 100);
   };
 
   const handleFoePkmn = (pkmn) => {
-    setTimeout(() => setFoePkmn(pkmn), 1500);
-    if (boxRef.current) setTimeout(() => boxRef.current.scrollTo(0, 0), 100);
+    setTimeout(() => setFoePkmn(pkmn), 100);
   };
 
   const createMyTeam = () => {
@@ -92,38 +98,21 @@ const Duel = ({ boxRef, foeTrainer }) => {
     // computer generated move
     let foePkmnMove;
     if (foePkmn.moves && !foePkmnMove) foePkmnMove = foePkmn.moves[Math.floor(Math.random() * foePkmn.moves.length)];
-
-    // battkle init
+    // battle init
     if (myPkmnMove && foePkmnMove) {
       setIsBattleOn(true);
-      setTimeout(() => setIsBattleOn(false), 3000);
+      setTimeout(() => setIsBattleOn(false), 6 * TURN_DELAY);
       if (Number(myPkmn.stats.Speed) >= Number(foePkmn.stats.Speed)) {
         attackFoePkmn(myPkmnMove, foePkmnMove);
-        if (boxRef.current) setTimeout(() => boxRef.current.scrollTo(0, 0), 100);
         setFoePkmnMove(null);
         setMyPkmnMove(null);
       } else {
         attackMyPkmn(foePkmnMove, myPkmnMove);
-        if (boxRef.current) setTimeout(() => boxRef.current.scrollTo(0, 0), 100);
         setMyPkmnMove(null);
         setFoePkmnMove(null);
       }
     }
   }, [myPkmnMove, foePkmnMove]);
-
-  const handleRecentLogs = (newLogs) => {
-    if (newLogs.length) {
-      newLogs.map((log, idx) => setTimeout(() => setRecentLogs((logs) => [...logs, log]), 500 * idx));
-      if (recentLogsRef.current) setTimeout(() => (recentLogsRef.current.scrollTop = recentLogsRef.current.scrollHeight), newLogs.length * 500);
-    } else setRecentLogs([]);
-  };
-
-  const handleLogs = (newLogs) => {
-    if (newLogs.length) {
-      newLogs.map((log, idx) => setTimeout(() => setLogs((logs) => [...logs, log]), 500 * idx));
-      if (logsRef.current) setTimeout(() => (logsRef.current.scrollTop = logsRef.current.scrollHeight), newLogs.length * 500);
-    } else setLogs([]);
-  };
 
   const handleMyPkmnStats = (newStats) => {
     setMyPkmn((myPkmn) => ({ ...myPkmn, stats: { ...myPkmn.stats, ...newStats } }));
@@ -136,6 +125,9 @@ const Duel = ({ boxRef, foeTrainer }) => {
   };
 
   const attackMyPkmn = (move, myMove = null) => {
+    // update log
+    setTimeout(() => handleLog(foePkmn.data.name.english + " used " + move.ename + "!"), 0 * TURN_DELAY);
+
     // calculate damage
     let damage = POWER_FACTOR * Number(move.power);
 
@@ -155,23 +147,30 @@ const Duel = ({ boxRef, foeTrainer }) => {
 
     // update damage
     damage = Math.min(Math.floor(damage), Number(myPkmn.stats.HP));
+    if (damage) setTimeout(() => handleLog(myPkmn.data.name.english + " lost " + damage + " HP!"), 1 * TURN_DELAY);
+    else setTimeout(() => handleLog(myPkmn.data.name.english + " lost " + damage + " HP!"), 1 * TURN_DELAY);
+    setTimeout(() => handleLog(myPkmn.data.name.english + " is left with " + (Number(myPkmn.stats.HP) - damage) + " HP!"), 2 * TURN_DELAY);
+    setTimeout(() => handleLog(""), 3 * TURN_DELAY);
 
-    // check if game over
     if (Number(myPkmn.stats.HP) - damage === 0) {
+      let newPkmn;
+      // check if game over
       let cnt = 0;
       myPkmns.forEach((pkmn) => {
-        if (pkmn.data.id !== myPkmn.data.id && Number(pkmn.stats.HP) !== 0) handleMyPkmn(pkmn);
-        else if (Number(pkmn.stats.HP) === 0) cnt++;
+        if (pkmn.data.id !== myPkmn.data.id && Number(pkmn.stats.HP) !== 0) {
+          newPkmn = pkmn;
+          setTimeout(() => handleMyPkmn(pkmn), 5 * TURN_DELAY);
+        } else if (Number(pkmn.stats.HP) === 0) cnt++;
       });
-      if (cnt === myPkmns.length - 1) setTimeout(() => setGameOver("You Lost! All your pokemon have fainted!"), 1500);
-    } else if (myMove) setTimeout(() => attackFoePkmn(myMove), 1500);
-
-    // // check if game over
-    // if (Number(myPkmn.stats.HP) - damage === 0) {
-    //   let cnt = 0;
-    //   myPkmns.forEach((pkmn) => (cnt += Number(Number(pkmn.stats.HP) === 0)));
-    //   if (cnt === myPkmns.length - 1) setTimeout(() => setGameOver("You Lost! All your pokemon have fainted!"), 1500);
-    // } else if (myMove) setTimeout(() => attackFoePkmn(myMove), 1500);
+      if (cnt === myPkmns.length - 1) setTimeout(() => setGameOver("You Lost! All your pokemon have fainted!"), TURN_DELAY);
+      else {
+        // update logs
+        setTimeout(() => handleLog(myPkmn.data.name.english + " lost to " + foePkmn.data.name.english + "!"), 3 * TURN_DELAY);
+        setTimeout(() => handleLog((trainer?.name || "I") + " called back " + myPkmn.data.name.english + "!"), 4 * TURN_DELAY);
+        setTimeout(() => handleLog((trainer?.name || "I") + " sent " + newPkmn.data.name.english + "!"), 5 * TURN_DELAY);
+        setTimeout(() => handleLog(""), 6 * TURN_DELAY);
+      }
+    } else if (myMove) setTimeout(() => attackFoePkmn(myMove), 3 * TURN_DELAY);
 
     // update stats
     handleMyPkmnStats({ HP: Number(myPkmn.stats.HP) - damage });
@@ -180,19 +179,12 @@ const Duel = ({ boxRef, foeTrainer }) => {
     if (myPkmnRef.current) {
       for (let i = 0; i <= 9; i++) setTimeout(() => (myPkmnRef.current.style.opacity = i % 2), 50 * i);
     }
-
-    // set logs
-    const newLogs = [
-      { date: new Date().toLocaleString(), message: `${foePkmn.data.name.english} used ${move.ename}!` },
-      { date: new Date().toLocaleString(), message: `${myPkmn.data.name.english} lost ${damage} HP!` },
-      { date: new Date().toLocaleString(), message: `${myPkmn.data.name.english} is left with ${Math.max(0, Number(myPkmn.stats.HP) - damage)} HP!` },
-    ];
-    handleRecentLogs([]);
-    handleRecentLogs(newLogs);
-    handleLogs(newLogs);
   };
 
   const attackFoePkmn = (move, foeMove) => {
+    // update log
+    setTimeout(() => handleLog(myPkmn.data.name.english + " used " + move.ename + "!"), 0 * TURN_DELAY);
+
     // calculate damage
     let damage = POWER_FACTOR * Number(move.power);
 
@@ -212,16 +204,39 @@ const Duel = ({ boxRef, foeTrainer }) => {
 
     // update damage
     damage = Math.min(Math.floor(damage), foePkmn.stats.HP);
+    if (damage) setTimeout(() => handleLog(foePkmn.data.name.english + " lost " + damage + " HP!"), 1 * TURN_DELAY);
+    else setTimeout(() => handleLog(foePkmn.data.name.english + " lost " + damage + " HP!"), 1 * TURN_DELAY);
+    setTimeout(() => handleLog(foePkmn.data.name.english + " is left with " + (Number(foePkmn.stats.HP) - damage) + " HP!"), 2 * TURN_DELAY);
+    setTimeout(() => handleLog(""), 3 * TURN_DELAY);
 
-    // check if game over
     if (Number(foePkmn.stats.HP) - damage === 0) {
+      let newPkmn;
+      // check if game over
       let cnt = 0;
       foePkmns.forEach((pkmn) => {
-        if (pkmn.data.id !== foePkmn.data.id && Number(pkmn.stats.HP) !== 0) handleFoePkmn(pkmn);
-        else if (Number(pkmn.stats.HP) === 0) cnt++;
+        if (pkmn.data.id !== foePkmn.data.id && Number(pkmn.stats.HP) !== 0) {
+          newPkmn = pkmn;
+          setTimeout(() => handleFoePkmn(pkmn), 5 * TURN_DELAY);
+        } else if (Number(pkmn.stats.HP) === 0) cnt++;
       });
-      if (cnt === foePkmns.length - 1) setTimeout(() => setGameOver("You Won! All of your opponent's pokemons have fainted!"), 1500);
-    } else if (foeMove) setTimeout(() => attackMyPkmn(foeMove), 1500);
+      if (cnt === foePkmns.length - 1) setTimeout(() => setGameOver("You Won! All your foe's pokemons have fainted!"), TURN_DELAY);
+      else {
+        // update logs
+        setTimeout(() => handleLog(foePkmn.data.name.english + " lost to " + myPkmn.data.name.english + "!"), 3 * TURN_DELAY);
+        setTimeout(() => handleLog((foeTrainer?.name || "Foe Trainer") + " called back " + foePkmn.data.name.english + "!"), 4 * TURN_DELAY);
+        setTimeout(() => handleLog((foeTrainer?.name || "Foe Trainer") + " sent " + newPkmn.data.name.english + "!"), 5 * TURN_DELAY);
+        setTimeout(() => handleLog(""), 6 * TURN_DELAY);
+      }
+    } else if (foeMove) setTimeout(() => attackMyPkmn(foeMove), 3 * TURN_DELAY);
+    // if (Number(foePkmn.stats.HP) - damage === 0) {
+    //   // check if game over
+    //   let cnt = 0;
+    //   foePkmns.forEach((pkmn) => {
+    //     if (pkmn.data.id !== foePkmn.data.id && Number(pkmn.stats.HP) !== 0) handleFoePkmn(pkmn);
+    //     else if (Number(pkmn.stats.HP) === 0) cnt++;
+    //   });
+    //   if (cnt === foePkmns.length - 1) setTimeout(() => setGameOver("You Won! All of your opponent's pokemons have fainted!"), TURN_DELAY);
+    // } else if (foeMove) setTimeout(() => attackMyPkmn(foeMove), 3 * TURN_DELAY);
 
     // update stats
     handleFoePkmnStats({ HP: Number(foePkmn.stats.HP) - damage });
@@ -230,16 +245,6 @@ const Duel = ({ boxRef, foeTrainer }) => {
     if (foePkmnRef.current) {
       for (let i = 0; i <= 9; i++) setTimeout(() => (foePkmnRef.current.style.opacity = i % 2), 50 * i);
     }
-
-    // set logs
-    const newLogs = [
-      { date: new Date().toLocaleString(), message: `${myPkmn.data.name.english} used ${move.ename}!` },
-      { date: new Date().toLocaleString(), message: `${foePkmn.data.name.english} lost ${damage} HP!` },
-      { date: new Date().toLocaleString(), message: `${foePkmn.data.name.english} is left with ${Math.max(0, Number(foePkmn.stats.HP) - damage)} HP!` },
-    ];
-    handleRecentLogs([]);
-    handleRecentLogs(newLogs);
-    handleLogs(newLogs);
   };
 
   return (
@@ -263,250 +268,121 @@ const Duel = ({ boxRef, foeTrainer }) => {
         </DialogActions>
       </Dialog>
       <Grid container spacing={2}>
-        <Grid item xs={12} md={8}>
-          <Paper sx={{ position: "relative", p: 2, height: "100%", minHeight: "400px", background: `url(fields/1.jpg) no-repeat center center / cover` }}>
-            <CardMedia sx={{ width: `50px`, position: "absolute", bottom: "45%", right: "10%", objectFit: "contain", zIndex: 1 }} component="img" src={"/images/trainer1.png"} alt="" />
-            <CardMedia sx={{ width: `75px`, position: "absolute", bottom: "50%", right: "0%", objectFit: "contain", zIndex: 0 }} component="img" src={"/images/trainer1.gif"} alt="" />
-            <CardMedia sx={{ width: `75px`, position: "absolute", bottom: "50%", right: "20%", objectFit: "contain", zIndex: 0 }} component="img" src={"/images/trainer2.gif"} alt="" />
-            {myPkmn.data && myPkmn.stats ? <CardMedia ref={myPkmnRef} sx={{ width: `${Math.min(Math.max(Number(myPkmn.data.profile.height.split(" ")[0]) * 150, 100), 100)}px`, position: "absolute", bottom: "30%", left: "20%", objectFit: "contain", zIndex: 4, opacity: Number(myPkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(myPkmn.data.id, "b")} alt="" /> : null}
-            {foePkmn.data && foePkmn.stats ? <CardMedia ref={foePkmnRef} sx={{ width: `${Math.min(Math.max(Number(foePkmn.data.profile.height.split(" ")[0]) * 75, 50), 100)}px`, position: "absolute", bottom: "40%", right: "20%", objectFit: "contain", zIndex: 2, opacity: Number(foePkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(foePkmn.data.id, "")} alt="" /> : null}
-            {myPkmn.data && myPkmn.stats ? (
-              <Stack direction="row" alignItems="flex-end" justifyContent="space-between" spacing={1} sx={{ width: "100%", position: "absolute", bottom: "0", left: "0", zIndex: 7 }}>
-                <Stack direction="row" spacing={1} p={1} pr={4} sx={{ bgcolor: "rgba(255, 255, 255, 0.5)", borderTopRightRadius: "50px" }}>
-                  <CardMedia component="img" sx={{ width: "50px", objectFit: "contain" }} src={myPkmn.data.image.hires} />
-                  <Stack>
-                    <Typography variant="h6" whiteSpace="nowrap">
-                      {"#" + myPkmn.data.id + " | " + myPkmn.data.name.english}
-                    </Typography>
-                    <Stack direction="row" spacing={1} mt={1}>
-                      {myPkmn.data.type.map((type) => (
-                        <Chip key={myPkmn.data.id + type} sx={{ color: "white", bgcolor: types.find((t) => t.english === type).color }} label={type} />
-                      ))}
-                    </Stack>
-                    <Slider
-                      value={Number(myPkmn.stats.HP)}
-                      onChange={() => {}}
-                      color={Number(myPkmn.stats.HP) > 0.25 * Number(myPkmn.data.base.HP) ? "success" : "error"}
-                      max={Number(myPkmn.data.base.HP)}
-                      marks={[
-                        { value: 0, label: 0 },
-                        { value: Math.floor(0.25 * Number(myPkmn.data.base.HP)), label: Math.floor(0.25 * Number(myPkmn.data.base.HP)) },
-                        // { value: Math.floor(0.5 * Number(myPkmn.data.base.HP)), label: Math.floor(0.5 * Number(myPkmn.data.base.HP)) },
-                        { value: Math.floor(1 * Number(myPkmn.data.base.HP)), label: Math.floor(1 * Number(myPkmn.data.base.HP)) },
-                      ]}
-                      valueLabelDisplay="auto"
-                    />
-                  </Stack>
+        <Grid item xs={12}>
+          <Paper sx={{ position: "relative", p: 2, height: "calc(100vh - 200px)", minHeight: "400px", maxHeight: "600px" }}>
+            <CardMedia sx={{ width: `100%`, height: "100%", position: "absolute", top: "0", left: "0", objectFit: "cover", zIndex: 0 }} component="img" src={"/fields/0.jpg"} alt="" />
+            <CardMedia sx={{ width: `30px`, position: "absolute", bottom: "25%", right: "10%", objectFit: "contain", zIndex: 1 }} component="img" src={"/images/trainer1.png"} alt="" />
+            <CardMedia sx={{ width: `75px`, position: "absolute", bottom: "25%", right: "40%", objectFit: "contain", zIndex: 0, display: { xs: "none", sm: "inline" } }} component="img" src={"/images/trainer1.gif"} alt="" />
+            <CardMedia sx={{ width: `75px`, position: "absolute", bottom: "25%", right: "35%", objectFit: "contain", zIndex: 0, display: { xs: "none", sm: "inline" } }} component="img" src={"/images/trainer2.gif"} alt="" />
+            {myPkmn && myPkmn.data && myPkmn.stats ? (
+              <Stack spacing={1} sx={{ position: "absolute", bottom: "15%", left: "30%", zIndex: 5 }}>
+                <Stack>
+                  {/* <Typography variant="h6" color="white" whiteSpace="nowrap">
+                    {"#" + myPkmn.data.id + " | " + myPkmn.data.name.english}
+                  </Typography> */}
+                  {/* <Slider value={Number(myPkmn.stats.HP)} onChange={() => {}} color={Number(myPkmn.stats.HP) > 0.25 * Number(myPkmn.data.base.HP) ? "success" : "error"} max={Number(myPkmn.data.base.HP)} valueLabelDisplay="auto" /> */}
+                  <Slider value={Number(myPkmn.stats.HP)} onChange={() => {}} sx={{ "& .MuiSlider-thumb": { display: "none", color: Number(myPkmn.stats.HP) > 0.25 * Number(myPkmn.data.base.HP) ? "white" : "red" }, "& .MuiSlider-track": { color: Number(myPkmn.stats.HP) > 0.25 * Number(myPkmn.data.base.HP) ? "white" : "red" }, "& .MuiSlider-rail": { color: Number(myPkmn.stats.HP) > 0.25 * Number(myPkmn.data.base.HP) ? "white" : "red" }, "& .MuiSlider-active": { color: Number(myPkmn.stats.HP) > 0.25 * Number(myPkmn.data.base.HP) ? "white" : "red" } }} max={Number(myPkmn.data.base.HP)} valueLabelDisplay="auto" />
                 </Stack>
-                <Grid container xs={12} display={{ xs: "none", sm: "flex" }}>
-                  {myPkmn.moves.map((move) => (
-                    <Grid item xs={12} sm={6} p={1}>
-                      <Button fullWidth disabled={isBattleOn || gameOver || Number(myPkmn.stats.HP) === 0} variant={myPkmnMove?.id === move.id ? "contained" : "outlined"} onClick={() => setMyPkmnMove(move)} key={move.id}>
-                        {move.ename}
-                      </Button>
-                    </Grid>
-                  ))}
-                </Grid>
+                <CardMedia ref={myPkmnRef} sx={{ width: `${Math.min(Math.max(Number(myPkmn.data.profile.height.split(" ")[0]) * 150, 100), 100)}px`, objectFit: "contain", opacity: Number(myPkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(myPkmn.data.id, "b")} alt="" />
               </Stack>
             ) : null}
-            {foePkmn.data && foePkmn.stats ? (
-              <Stack direction="row" alignItems="flex-start" justifyContent={{ xs: "flex-end", sm: "space-between" }} spacing={1} sx={{ width: "100%", position: "absolute", top: "0", left: "0", zIndex: 7 }}>
-                {/* <Grid container xs={12}>
-                  {foePkmn.moves.map((move) => (
-                    <Grid item xs={12} sm={6} p={1}>
-                      <Button fullWidth disabled={isBattleOn || gameOver || Number(foePkmn.stats.HP) === 0} variant={foePkmnMove?.id === move.id ? "contained" : "outlined"} onClick={() => setFoePkmnMove(move)} key={move.id}>
-                      <Button fullWidth disabled={isBattleOn || gameOver || Number(foePkmn.stats.HP) === 0} variant={foePkmnMove?.id === move.id ? "contained" : "outlined"} onClick={() => setFoePkmnMove(move)} key={move.id}>
-                        {move.ename}
-                      </Button>
-                    </Grid>
-                  ))}
-                </Grid> */}
-                <Grid container xs={12} display={{ xs: "none", sm: "flex" }}>
-                  <Stack direction="row" flexWrap="wrap" p={2}>
-                    {foePkmns.map((foePkmn) => (
-                      <CardMedia component="img" sx={{ width: "50px", objectFit: "contain", filter: Number(foePkmn.stats.HP) === 0 ? "brightness(0)" : "brightness(1)" }} src={foePkmn.data.image.hires} />
-                    ))}
-                  </Stack>
-                </Grid>
-                <Stack direction="row" spacing={1} p={1} pr={4} sx={{ bgcolor: "rgba(255, 255, 255, 0.5)", borderBottomLeftRadius: "50px" }}>
-                  <CardMedia component="img" sx={{ width: "50px", objectFit: "contain" }} src={foePkmn.data.image.hires} />
-                  <Stack>
-                    <Typography variant="h6" whiteSpace="nowrap">
-                      {"#" + foePkmn.data.id + " | " + foePkmn.data.name.english}
-                    </Typography>
-                    <Stack direction="row" spacing={1} mt={1}>
-                      {foePkmn.data.type.map((type) => (
-                        <Chip key={foePkmn.data.id + type} sx={{ color: "white", bgcolor: types.find((t) => t.english === type).color }} label={type} />
-                      ))}
-                    </Stack>
-                    <Slider
-                      value={Number(foePkmn.stats.HP)}
-                      onChange={() => {}}
-                      color={Number(foePkmn.stats.HP) > 0.25 * Number(foePkmn.data.base.HP) ? "success" : "error"}
-                      max={Number(foePkmn.data.base.HP)}
-                      marks={[
-                        { value: 0, label: 0 },
-                        { value: Math.floor(0.25 * Number(foePkmn.data.base.HP)), label: Math.floor(0.25 * Number(foePkmn.data.base.HP)) },
-                        // { value: Math.floor(0.5 * Number(foePkmn.data.base.HP)), label: Math.floor(0.5 * Number(foePkmn.data.base.HP)) },
-                        { value: Math.floor(1 * Number(foePkmn.data.base.HP)), label: Math.floor(1 * Number(foePkmn.data.base.HP)) },
-                      ]}
-                      valueLabelDisplay="auto"
-                    />
-                  </Stack>
+            {foePkmn && foePkmn.data && foePkmn.stats ? (
+              <Stack spacing={1} sx={{ position: "absolute", bottom: "20%", right: "20%", zIndex: 4 }}>
+                <Stack>
+                  {/* <Typography variant="h6" color="white" whiteSpace="nowrap">
+                    {"#" + foePkmn.data.id + " | " + foePkmn.data.name.english}
+                  </Typography> */}
+                  <Slider value={Number(foePkmn.stats.HP)} onChange={() => {}} sx={{ "& .MuiSlider-thumb": { display: "none", color: Number(foePkmn.stats.HP) > 0.25 * Number(foePkmn.data.base.HP) ? "white" : "red" }, "& .MuiSlider-track": { color: Number(foePkmn.stats.HP) > 0.25 * Number(foePkmn.data.base.HP) ? "white" : "red" }, "& .MuiSlider-rail": { color: Number(foePkmn.stats.HP) > 0.25 * Number(foePkmn.data.base.HP) ? "white" : "red" }, "& .MuiSlider-active": { color: Number(foePkmn.stats.HP) > 0.25 * Number(foePkmn.data.base.HP) ? "white" : "red" } }} max={Number(foePkmn.data.base.HP)} valueLabelDisplay="auto" />
                 </Stack>
+                <CardMedia ref={foePkmnRef} sx={{ width: `${Math.min(Math.max(Number(foePkmn.data.profile.height.split(" ")[0]) * 150, 100), 100)}px`, objectFit: "contain", opacity: Number(foePkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(foePkmn.data.id)} alt="" />
               </Stack>
             ) : null}
-          </Paper>
-        </Grid>
-        <Grid item sx={12} display={{ xs: "flex", sm: "none" }}>
-          {myPkmn.data && myPkmn.stats ? (
-            <Grid container xs={12}>
-              {myPkmn.moves.map((move) => (
-                <Grid item xs={12} sm={6} p={1}>
-                  <Button fullWidth disabled={isBattleOn || gameOver || Number(myPkmn.stats.HP) === 0} variant={myPkmnMove?.id === move.id ? "contained" : "outlined"} onClick={() => setMyPkmnMove(move)} key={move.id}>
-                    {move.ename}
-                  </Button>
-                </Grid>
-              ))}
-            </Grid>
-          ) : null}
-        </Grid>
-        <Grid item sx={12} display={{ xs: "flex", sm: "none" }}>
-          <Stack direction="row" flexWrap="wrap" p={2}>
-            {foePkmns.map((foePkmn) => (
-              <CardMedia component="img" sx={{ width: "50px", objectFit: "contain", filter: Number(foePkmn.stats.HP) === 0 ? "brightness(0)" : "brightness(1)" }} src={foePkmn.data.image.hires} />
+            {foePkmns.map((foePkmn, index) => (
+              <CardMedia sx={{ position: "absolute", bottom: "25%", right: `${15 * ((index + 1) / foePkmns.length)}%`, zIndex: 1, width: `${Math.min(Math.max(Number(foePkmn.data.profile.height.split(" ")[0]) * 150, 30), 30)}px`, objectFit: "contain", opacity: Number(foePkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(foePkmn.data.id)} alt="" />
             ))}
-          </Stack>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Stack spacing={2}>
-            <Paper sx={{ p: 2 }}>
-              <Typography gutterBottom variant="h6">
-                My Team
-              </Typography>
-              <Stack direction="row" justifyContent="space-between" flexWrap="wrap" p={1}>
-                {myPkmns.map((myPkmn) => (
-                  <CardMedia onClick={() => handleMyPkmn(myPkmn)} component="img" sx={{ width: "50px", objectFit: "contain", cursor: "pointer", transition: "all 0.5s", "&:hover": { transform: "scale(1.2)" }, filter: Number(myPkmn.stats.HP) === 0 ? "brightness(0)" : "brightness(1)" }} src={myPkmn.data.image.hires} />
-                ))}
-              </Stack>
-            </Paper>
-            <Paper sx={{ p: 2 }}>
-              <Typography gutterBottom variant="h6">
-                Recent Logs
-              </Typography>
-              <Stack sx={{ height: "40vh", maxHeight: "150px", overflowY: "auto" }} ref={recentLogsRef}>
-                {recentLogs.map((log) => (
-                  <Stack sx={{ mb: 2 }}>
-                    <Typography variant="body1">{log.message}</Typography>
-                    <Typography variant="body2">{log.date}</Typography>
-                  </Stack>
-                ))}
-              </Stack>
-            </Paper>
-            <Paper sx={{ p: 2 }}>
-              <Typography gutterBottom variant="h6">
-                Past Logs
-              </Typography>
-              <Stack sx={{ height: "40vh", maxHeight: "150px", overflowY: "auto" }} ref={logsRef}>
-                {logs.map((log) => (
-                  <Stack sx={{ mb: 2 }}>
-                    <Typography variant="body1">{log.message}</Typography>
-                    <Typography variant="body2">{log.date}</Typography>
-                  </Stack>
-                ))}
-              </Stack>
-            </Paper>
-          </Stack>
-        </Grid>
-        {/* <Grid item xs={12}>
-          <Paper sx={{ p: 2 }}>
-            {myPkmns.length > 0 ? (
-              <Stack spacing={2}>
-                <Typography gutterBottom variant="h6">
-                  My Team
-                </Typography>
-                <Grid container>
-                  {myPkmns.map((pkmn) =>
-                    pkmn.data && pkmn.stats ? (
-                      <Grid item xs={12} sm={6} md={2}>
-                        <Card sx={{ height: "100%" }}>
-                          <CardActionArea onClick={() => handleMyPkmn(pkmn)}>
-                            <CardMedia component="img" sx={{ height: "75px", objectFit: "contain", mt: 2 }} src={getSprite(pkmn.data.id)} />
-                            <CardContent>
-                              <Typography gutterBottom variant="body2">
-                                {pkmn.data.id + " | " + pkmn.data.name.english}
-                              </Typography>
-                              <Stack direction="row" spacing={1}>
-                                {pkmn.data.type.map((type) => (
-                                  <Chip key={pkmn.data.id + type} sx={{ color: "white", bgcolor: types.find((t) => t.english === type).color }} label={type} />
-                                ))}
-                              </Stack>
-                              <Slider
-                                value={Number(pkmn.stats.HP)}
-                                onChange={() => {}}
-                                color={Number(pkmn.stats.HP) > 0.25 * Number(pkmn.data.base.HP) ? "success" : "error"}
-                                max={Number(pkmn.data.base.HP)}
-                                marks={[
-                                  { value: 0, label: 0 },
-                                  { value: Math.floor(0.25 * Number(pkmn.data.base.HP)), label: Math.floor(0.25 * Number(pkmn.data.base.HP)) },
-                                  // { value: Math.floor(0.5 * Number(pkmn.data.base.HP)), label: Math.floor(0.5 * Number(pkmn.data.base.HP)) },
-                                  { value: Math.floor(1 * Number(pkmn.data.base.HP)), label: Math.floor(1 * Number(pkmn.data.base.HP)) },
-                                ]}
-                                valueLabelDisplay="auto"
-                              />
-                            </CardContent>
-                          </CardActionArea>
-                        </Card>
-                      </Grid>
-                    ) : null
-                  )}
-                </Grid>
-              </Stack>
-            ) : null}
-          </Paper>
-        </Grid> */}
-        {/* <Grid item xs={12}>
-          <Paper sx={{ p: 2 }}>
-            {foePkmns.length > 0 ? (
-              <Stack spacing={2}>
-                <Typography gutterBottom variant="h6">
-                  Enemy Team
-                </Typography>
-                <Grid container>
-                  {foePkmns.map((pkmn) => (
-                    <Grid item xs={12} sm={6} md={2}>
-                      <Card sx={{ height: "100%" }}>
-                        <CardMedia component="img" sx={{ height: "75px", objectFit: "contain", mt: 2 }} src={getSprite(pkmn.data.id)} />
-                        <CardContent>
-                          <Typography gutterBottom variant="body2">
-                            {pkmn.data.id + " | " + pkmn.data.name.english}
-                          </Typography>
-                          <Stack direction="row" spacing={1}>
-                            {pkmn.data.type.map((type) => (
-                              <Chip key={pkmn.data.id + type} sx={{ color: "white", bgcolor: types.find((t) => t.english === type).color }} label={type} />
-                            ))}
-                          </Stack>
-                          <Slider
-                            value={Number(pkmn.stats.HP)}
-                            color={Number(pkmn.stats.HP) > 0.25 * Number(pkmn.data.base.HP) ? "success" : "error"}
-                            max={Number(pkmn.data.base.HP)}
-                            marks={[
-                              { value: 0, label: 0 },
-                              { value: Math.floor(0.25 * Number(pkmn.data.base.HP)), label: Math.floor(0.25 * Number(pkmn.data.base.HP)) },
-                              // { value: Math.floor(0.5 * Number(pkmn.data.base.HP)), label: Math.floor(0.5 * Number(pkmn.data.base.HP)) },
-                              { value: Math.floor(1 * Number(pkmn.data.base.HP)), label: Math.floor(1 * Number(pkmn.data.base.HP)) },
-                            ]}
-                            valueLabelDisplay="auto"
-                          />
-                        </CardContent>
-                      </Card>
+            {myPkmn && myPkmn.data && myPkmn.stats && !isBattleOn ? (
+              <Stack direction="row" alignItems="flex-end" justifyContent="space-between" spacing={1} sx={{ width: "100%", position: "absolute", bottom: "0", left: "0", zIndex: 7 }}>
+                <Grid container xs={12} spacing={1} p={2} pt={0}>
+                  <Grid item xs={12}>
+                    <Typography variant="h6" whiteSpace="nowrap" color="white">
+                      What should {myPkmn.data.name.english} do?
+                    </Typography>
+                  </Grid>
+                  {myPkmn.moves.map((move) => (
+                    <Grid item xs={6} md={3}>
+                      <Button fullWidth disabled={isBattleOn || gameOver || Number(myPkmn.stats.HP) === 0} variant={myPkmnMove?.id === move.id ? "contained" : "outlined"} sx={{ color: "white", borderColor: "white !important" }} onClick={() => setMyPkmnMove(move)} key={move.id}>
+                        {move.ename}
+                      </Button>
                     </Grid>
                   ))}
                 </Grid>
               </Stack>
-            ) : null}
+            ) : (
+              <Typography variant="h6" whiteSpace="nowrap" color="white" sx={{ position: "absolute", bottom: "0", left: "0", zIndex: 7, p: 2 }}>
+                {log}
+              </Typography>
+            )}
+            <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={1} sx={{ width: "100%", position: "absolute", top: "0", left: "0", zIndex: 7 }}>
+              <Grid container xs={12}>
+                <Stack direction={{ xs: "column", sm: "row" }} p={1} alignItems={{ xs: "flex-start", sm: "center" }} flexWrap="wrap" sx={{ width: "100%" }}>
+                  <Tooltip title={trainer?.name || "Me"}>
+                    <Avatar sx={{ m: 1 }} alt={trainer?.name || "Me"} src={trainer?.photo} onClick={(e) => setAnchorEl(e.currentTarget)} />
+                  </Tooltip>
+                  <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+                    <Typography variant="h6" sx={{ px: 1 }}>
+                      Switch?
+                    </Typography>
+                    {myPkmns.map((myPkmn) => (
+                      <MenuItem
+                        onClick={() => {
+                          handleMyPkmn(myPkmn);
+                          setAnchorEl(null);
+                        }}
+                        key={"my_pokemons" + myPkmn.data.id}
+                      >
+                        <ListItemAvatar>
+                          <Avatar src={myPkmn.data.image.hires} sty />
+                        </ListItemAvatar>
+                        <ListItemText primary={myPkmn.data.name.english} secondary={"HP - " + myPkmn.stats.HP + "/" + myPkmn.data.base.HP} />
+                      </MenuItem>
+                    ))}
+                  </Menu>
+                  {myPkmns.map((myPkmn) => (
+                    <CatchingPokemon sx={{ color: myPkmn.stats.HP === "0" ? "black" : "white" }} />
+                  ))}
+                </Stack>
+              </Grid>
+              <Grid container xs={12}>
+                <Stack direction={{ xs: "column", sm: "row-reverse" }} p={1} alignItems={{ xs: "flex-end", sm: "center" }} flexWrap="wrap" sx={{ width: "100%" }}>
+                  <Tooltip title={foeTrainer?.name || "Foe"}>
+                    <Avatar sx={{ m: 1 }} alt={foeTrainer?.name || "Me"} src={foeTrainer?.photo} onClick={(e) => setAnchorEl2(e.currentTarget)} />
+                  </Tooltip>
+                  <Menu anchorEl={anchorEl2} open={Boolean(anchorEl2)} onClose={() => setAnchorEl2(null)}>
+                    <Typography variant="h6" sx={{ px: 1 }}>
+                      Enemy Team
+                    </Typography>
+                    {foePkmns.map((foePkmn) => (
+                      <MenuItem
+                        onClick={() => {
+                          setAnchorEl2(null);
+                        }}
+                        key={"foe_pokemons" + foePkmn.data.id}
+                      >
+                        <ListItemAvatar>
+                          <Avatar src={foePkmn.data.image.hires} sty />
+                        </ListItemAvatar>
+                        <ListItemText primary={foePkmn.data.name.english} secondary={"HP - " + foePkmn.stats.HP + "/" + foePkmn.data.base.HP} />
+                      </MenuItem>
+                    ))}
+                  </Menu>
+                  {myPkmns.map((myPkmn) => (
+                    <CatchingPokemon sx={{ color: myPkmn.stats.HP === "0" ? "black" : "white" }} />
+                  ))}
+                </Stack>
+              </Grid>
+            </Stack>
           </Paper>
-        </Grid> */}
+        </Grid>
       </Grid>
     </Fragment>
   );

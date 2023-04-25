@@ -6,9 +6,11 @@ import Home from "./pages/Home";
 import { BATTLE_ROUTE } from "./constants/routes";
 // constants
 import { COMPANY } from "./constants/vars";
+// data
+import trainers from "./data/trainerdex.json";
 // mui
 import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
-import { CssBaseline, Drawer as MuiDrawer, Box, AppBar as MuiAppBar, Toolbar, List, Typography, Divider, IconButton, Badge, Container, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
+import { CssBaseline, Drawer as MuiDrawer, Box, AppBar as MuiAppBar, Toolbar, List, Typography, Divider, IconButton, Container, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import { ChevronLeft, CatchingPokemon } from "@mui/icons-material";
 
 const drawerWidth = 240;
@@ -59,8 +61,8 @@ const mdTheme = createTheme();
 
 const App = () => {
   const navigate = useNavigate();
-  const boxRef = useRef(null);
   const [open, setOpen] = useState(false);
+  const [trainer, setTrainer] = useState(null);
   const [foeTrainer, setFoeTrainer] = useState(null);
   const toggleDrawer = () => {
     setOpen(!open);
@@ -96,11 +98,12 @@ const App = () => {
             </ListItemButton>
           </List>
         </Drawer>
-        <Box ref={boxRef} component="main" sx={{ backgroundColor: (theme) => (theme.palette.mode === "light" ? theme.palette.grey[100] : theme.palette.grey[900]), flexGrow: 1, height: "100vh", overflow: "auto" }}>
+        <Box component="main" sx={{ backgroundColor: (theme) => (theme.palette.mode === "light" ? theme.palette.grey[100] : theme.palette.grey[900]), flexGrow: 1, height: "100vh", overflow: "auto" }}>
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Routes>
-              <Route path="/battle/*" element={<Battle boxRef={boxRef} foeTrainer={foeTrainer} />} />
+              <Route path="/*" element={<Battle foeTrainer={foeTrainer} />} />
+              <Route path="/battle/*" element={<Battle trainer={trainer} foeTrainer={foeTrainer} />} />
               <Route path="/*" element={<Home setFoeTrainer={setFoeTrainer} />} />
             </Routes>
             <Typography sx={{ pt: 4 }} variant="body2" color="text.secondary" align="center">
