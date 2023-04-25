@@ -274,11 +274,11 @@ const Battle = ({ trainer, foeTrainer }) => {
       </Dialog>
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <Paper sx={{ position: "relative", p: 2, height: "calc(100vh - 200px)", minHeight: "400px", maxHeight: "600px" }}>
+          <Paper sx={{ position: "relative", p: 2, height: "calc(100vh - 300px)", minHeight: "350px", maxHeight: "600px" }}>
             <CardMedia sx={{ width: `100%`, height: "100%", position: "absolute", top: "0", left: "0", objectFit: "cover", zIndex: 0 }} component="img" src={"/fields/0.jpg"} alt="" />
-            <CardMedia sx={{ width: `30px`, position: "absolute", bottom: "25%", right: "10%", objectFit: "contain", zIndex: 1 }} component="img" src={"/images/trainer1.png"} alt="" />
-            <CardMedia sx={{ width: `75px`, position: "absolute", bottom: "25%", right: "40%", objectFit: "contain", zIndex: 0, display: { xs: "none", sm: "inline" } }} component="img" src={"/images/trainer1.gif"} alt="" />
-            <CardMedia sx={{ width: `75px`, position: "absolute", bottom: "25%", right: "35%", objectFit: "contain", zIndex: 0, display: { xs: "none", sm: "inline" } }} component="img" src={"/images/trainer2.gif"} alt="" />
+            <CardMedia sx={{ width: `30px`, position: "absolute", bottom: "25%", right: "10%", objectFit: "contain", zIndex: 1, filter: "brightness(0)" }} component="img" src={"/images/trainer1.png"} alt="" />
+            <CardMedia sx={{ width: `75px`, position: "absolute", bottom: "28%", right: "40%", objectFit: "contain", zIndex: 0, display: {xs: "none", sm: "inline"} }} component="img" src={"/images/trainer1.gif"} alt="" />
+            <CardMedia sx={{ width: `75px`, position: "absolute", bottom: "28%", right: "30%", objectFit: "contain", zIndex: 0, display: {xs: "none", sm: "inline"} }} component="img" src={"/images/trainer2.gif"} alt="" />
             {myPkmn && myPkmn.data && myPkmn.stats ? (
               <Stack spacing={1} sx={{ position: "absolute", bottom: "15%", left: "30%", zIndex: 5 }}>
                 <Stack>
@@ -288,8 +288,8 @@ const Battle = ({ trainer, foeTrainer }) => {
                   {/* <Slider value={Number(myPkmn.stats.HP)} onChange={() => {}} color={Number(myPkmn.stats.HP) > 0.25 * Number(myPkmn.data.base.HP) ? "success" : "error"} max={Number(myPkmn.data.base.HP)} valueLabelDisplay="auto" /> */}
                   <Slider value={Number(myPkmn.stats.HP)} onChange={() => {}} sx={{ "& .MuiSlider-thumb": { display: "none", color: Number(myPkmn.stats.HP) > 0.25 * Number(myPkmn.data.base.HP) ? "white" : "red" }, "& .MuiSlider-track": { color: Number(myPkmn.stats.HP) > 0.25 * Number(myPkmn.data.base.HP) ? "white" : "red" }, "& .MuiSlider-rail": { color: Number(myPkmn.stats.HP) > 0.25 * Number(myPkmn.data.base.HP) ? "white" : "red" }, "& .MuiSlider-active": { color: Number(myPkmn.stats.HP) > 0.25 * Number(myPkmn.data.base.HP) ? "white" : "red" } }} max={Number(myPkmn.data.base.HP)} valueLabelDisplay="auto" />
                 </Stack>
-                {/* <CardMedia ref={myPkmnRef} sx={{ width: `${Math.min(Math.max(Number(myPkmn.data.profile.height.split(" ")[0]) * 150, 100), 100)}px`, objectFit: "contain", opacity: Number(myPkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(myPkmn.data.id, "b")} alt="" /> */}
-                <CardMedia ref={myPkmnRef} sx={{ width: `${Math.max(Math.min((Number(myPkmn.data.profile.height.split(" ")[0]) / 5) * 100, 200), 50)}px`, objectFit: "contain", opacity: Number(myPkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(myPkmn.data.id, "b")} alt="" />
+                <CardMedia ref={myPkmnRef} sx={{ height: `100px`, objectFit: "contain", opacity: Number(myPkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(myPkmn.data.id, "b")} alt="" />
+                {/* <CardMedia ref={myPkmnRef} sx={{ height: `${Math.max(Math.min((Number(myPkmn.data.profile.height.split(" ")[0]) / 2) * 100, 150), 75)}px`, objectFit: "contain", opacity: Number(myPkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(myPkmn.data.id, "b")} alt="" /> */}
               </Stack>
             ) : null}
             {foePkmn && foePkmn.data && foePkmn.stats ? (
@@ -300,15 +300,15 @@ const Battle = ({ trainer, foeTrainer }) => {
                   </Typography> */}
                   <Slider value={Number(foePkmn.stats.HP)} onChange={() => {}} sx={{ "& .MuiSlider-thumb": { display: "none", color: Number(foePkmn.stats.HP) > 0.25 * Number(foePkmn.data.base.HP) ? "white" : "red" }, "& .MuiSlider-track": { color: Number(foePkmn.stats.HP) > 0.25 * Number(foePkmn.data.base.HP) ? "white" : "red" }, "& .MuiSlider-rail": { color: Number(foePkmn.stats.HP) > 0.25 * Number(foePkmn.data.base.HP) ? "white" : "red" }, "& .MuiSlider-active": { color: Number(foePkmn.stats.HP) > 0.25 * Number(foePkmn.data.base.HP) ? "white" : "red" } }} max={Number(foePkmn.data.base.HP)} valueLabelDisplay="auto" />
                 </Stack>
-                {/* <CardMedia ref={foePkmnRef} sx={{ width: `${Math.min(Math.max(Number(foePkmn.data.profile.height.split(" ")[0]) * 150, 100), 100)}px`, objectFit: "contain", opacity: Number(foePkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(foePkmn.data.id, "3d")} alt="" /> */}
-                <CardMedia ref={foePkmnRef} sx={{ width: `${Math.max(Math.min((Number(foePkmn.data.profile.height.split(" ")[0]) / 5) * 100, 200), 50)}px`, objectFit: "contain", opacity: Number(foePkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(foePkmn.data.id, "3d")} alt="" />
+                <CardMedia ref={foePkmnRef} sx={{ height: `75px`, objectFit: "contain", opacity: Number(foePkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(foePkmn.data.id)} alt="" />
+                {/* <CardMedia ref={foePkmnRef} sx={{ width: `75px`, transform: `scale(${Math.min(2, Number(foePkmn.data.profile.height.split(" ")[0]))})`, objectFit: "contain", opacity: Number(foePkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(foePkmn.data.id)} alt="" /> */}
               </Stack>
             ) : null}
             {foePkmns
               .filter((pkmn) => pkmn.data.id !== foePkmn.data.id)
               .map((foePkmn, index) => (
-                // <CardMedia sx={{ position: "absolute", bottom: "30%", right: `${15 * ((index + 1) / foePkmns.length)}%`, zIndex: 0, width: `${Math.min(Math.max(Number(foePkmn.data.profile.height.split(" ")[0]) * 150, 50), 50)}px`, objectFit: "contain", opacity: Number(foePkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(foePkmn.data.id, "3d")} alt="" />
-                <CardMedia sx={{ position: "absolute", bottom: "28%", right: `${10 * ((index + 1) / foePkmns.length)}%`, zIndex: 0, width: `${Math.max(Math.min((Number(foePkmn.data.profile.height.split(" ")[0]) / 5) * 100, 100), 25)}px`, objectFit: "contain", opacity: Number(foePkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(foePkmn.data.id, "3d")} alt="" />
+                <CardMedia sx={{ position: "absolute", bottom: "28%", right: `${15 * ((index + 1) / foePkmns.length)}%`, zIndex: 0, width: `50px`, objectFit: "contain", opacity: Number(foePkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(foePkmn.data.id)} alt="" />
+                // <CardMedia sx={{ position: "absolute", bottom: "28%", right: `${10 * ((index + 1) / foePkmns.length)}%`, zIndex: 0, width: `${Math.max(Math.min((Number(foePkmn.data.profile.height.split(" ")[0]) / 5) * 100, 100), 25)}px`, objectFit: "contain", opacity: Number(foePkmn.stats.HP) === 0 ? "0.5" : "1" }} component="img" src={getSprite(foePkmn.data.id)} alt="" />
               ))}
             {myPkmn && myPkmn.data && myPkmn.stats && !isBattleOn ? (
               <Stack direction="row" alignItems="flex-end" justifyContent="space-between" spacing={1} sx={{ width: "100%", position: "absolute", bottom: "0", left: "0", zIndex: 7 }}>
